@@ -4,6 +4,9 @@ ini_set("display_errors", 1);
 require_once('func.php');
 $pdo = db_conn();
 
+session_start();
+$kanri_flg = $_SESSION['kanri_flg'] ?? 0; // セッションからkanri_flgを取得
+$name = $_SESSION['name'] ?? 'ゲスト'; // セッションからユーザー名を取得
 // 2. データ取得SQL作成
 $sql = "SELECT id, title, author, author_img, url, bookmark, explanation FROM qiita_table2 ORDER BY bookmark DESC, id ASC";
 $stmt = $pdo->prepare($sql);
@@ -121,6 +124,15 @@ $values = $stmt->fetchAll(PDO::FETCH_ASSOC); // PDO::FETCH_ASSOC[カラム名の
             background-color: #0056b3;
         }
 
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px;
+            background-color: #333;
+            color: #fff;
+        }
+
     </style>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script>
@@ -162,6 +174,9 @@ $values = $stmt->fetchAll(PDO::FETCH_ASSOC); // PDO::FETCH_ASSOC[カラム名の
 </head>
 <body>
     <h1>Qiita お勧め記事</h1>
+    <div class="header">
+        <div class="username">ログインユーザー: <?= htmlspecialchars($name, ENT_QUOTES, 'UTF-8') ?></div>
+    </div>
     <a href="qiita_input.php" class="add-article">記事追加</a>
     <table>
         <tr>
@@ -192,7 +207,9 @@ $values = $stmt->fetchAll(PDO::FETCH_ASSOC); // PDO::FETCH_ASSOC[カラム名の
                     <button type="submit">更新</button>
                     </form>
                 </td>
-                <td><button class="delete" onclick="deleteButton(<?= $row['id'] ?>)">削除</button></td>
+                <?php if ($kanri_flg == 1): ?>
+                    <td><button onclick="deleteButton(<?= $row['id'] ?>)">削除</button></td>
+                <?php endif; ?>
             </tr>
         <?php endforeach; ?>
     </table>
